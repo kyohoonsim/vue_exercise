@@ -1,39 +1,42 @@
 <template>
 
-  <div class="black-bg" v-if="모달창열렸니 == true">
-    <div class="white-bg">
-      <h4>상세페이지임</h4>
-      <p>상세페이지 내용임</p>
-      <button @click="모달창열렸니 = false">닫기</button>
-    </div>
-  </div>
+<transition name="fade">
+  <Modal @CloseModal="모달창열렸니 = $event" :원룸들="원룸들" :누른거="누른거" :모달창열렸니="모달창열렸니"/>
+</transition>
 
   <div class="menu">
     <a v-for="(a, i) in 메뉴들" :key="i">{{ a }}</a>
   </div>
 
-  <!-- <div v-for="(a, i) in products" :key="i">
-    <h4>{{a}}</h4>
-    <p>40만원</p>
-  </div> -->
+  <Discount v-if="showDiscount == true" :DiscountRatio="DiscountRatio" />
 
-  <div v-for="(a, i) in 원룸들" :key="i">
-    <img :src="a.image" class="room-img">
-    <h4>{{a.title}}</h4>
-    <p>{{a.price}}</p>
-  </div>
+  <button @click="priceSort">가격낮은순정렬</button>
+  <button @click="priceSortDesc">가격높은순정렬</button>
+  <button @click="titleSort">상품명 가나다순정렬</button>
+  <button @click="sortBack">되돌리기</button>
+
+  <Card @openModal="모달창열렸니 = true; 누른거 = $event" :원룸="a" v-for="(a, i) in 원룸들" :key="i" />
+
 
 </template>
 
 <script>
 import data from './assets/oneroom.js';
+import Discount from './Discount.vue';
+import Modal from './Modal.vue';
+import Card from './Card.vue';
 
 
 
 export default {
   name: 'App',
-  data(){ // 데이터 보관함
+  data(){
     return {
+      DiscountRatio: 30,
+      showDiscount : true,
+      원룸들오리지널 : [...data],
+      오브젝트 : {name: 'kim', age: 20},
+      누른거 : 0,
       원룸들 : data,
       모달창열렸니 : false,
       신고수: [0, 0, 0],
@@ -44,10 +47,58 @@ export default {
   methods : {
     increase(i){
       this.신고수[i] += 1;
-    }
+    },
+
+    priceSort(){
+      this.원룸들.sort(function(a, b){
+        return a.price - b.price
+      })
+    },
+
+    priceSortDesc(){
+      this.원룸들.sort(function(a, b){
+        return b.price - a.price
+      })
+    },
+
+    titleSort(){
+
+      var a = ['안녕', '바보', '천재', '너는', '하하'];
+      console.log(a.sort());
+      this.원룸들.sort(function(a, b){
+        return a.title - b.title
+      })
+    },
+
+
+    sortBack(){
+      this.원룸들 = [...this.원룸들오리지널];
+    },
+  },
+  
+  created(){
+    // 서버에서 데이터 가져오는 코드
   },
 
+  mounted(){
+    setInterval(() => {
+      if (this.DiscountRatio > 0){
+        this.DiscountRatio--;
+      }
+    }, 1000)
+  },
+
+  // mounted(){
+  //   setTimeout(()=>{
+  //     this.showDiscount = false;
+  //   }, 2000);
+    
+  // },
+
   components: {
+    Discount : Discount,
+    Modal : Modal,
+    Card : Card,
   }
 }
 </script>
@@ -97,4 +148,38 @@ div {
   padding: 20px;
 }
 
+.start {
+  opacity: 0;
+  transition: all 1s;
+}
+
+.end {
+  opacity: 1;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(-1000px);
+}
+
+.fade-enter-active {
+  transition: all 1s;
+}
+
+.fade-enter-to {
+  opacity: 1;
+  transform: translateY(0px);
+}
+
+.fade-leave-from {
+  opacity: 1;
+}
+
+.fade-leave-active {
+  transition: all 1s;
+}
+
+.fade-leave-to {
+  opacity: 0;
+}
 </style>
